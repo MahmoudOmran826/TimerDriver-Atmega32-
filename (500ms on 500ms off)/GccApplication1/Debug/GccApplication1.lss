@@ -1,0 +1,123 @@
+
+GccApplication1.elf:     file format elf32-avr
+
+Sections:
+Idx Name          Size      VMA       LMA       File off  Algn
+  0 .text         0000009a  00000000  00000000  00000054  2**1
+                  CONTENTS, ALLOC, LOAD, READONLY, CODE
+  1 .data         00000000  00800060  00800060  000000ee  2**0
+                  CONTENTS, ALLOC, LOAD, DATA
+  2 .comment      00000030  00000000  00000000  000000ee  2**0
+                  CONTENTS, READONLY
+  3 .note.gnu.avr.deviceinfo 0000003c  00000000  00000000  00000120  2**2
+                  CONTENTS, READONLY
+  4 .debug_aranges 00000028  00000000  00000000  0000015c  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  5 .debug_info   00000596  00000000  00000000  00000184  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  6 .debug_abbrev 0000051a  00000000  00000000  0000071a  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  7 .debug_line   000001c7  00000000  00000000  00000c34  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  8 .debug_frame  00000034  00000000  00000000  00000dfc  2**2
+                  CONTENTS, READONLY, DEBUGGING
+  9 .debug_str    0000030b  00000000  00000000  00000e30  2**0
+                  CONTENTS, READONLY, DEBUGGING
+ 10 .debug_ranges 00000018  00000000  00000000  0000113b  2**0
+                  CONTENTS, READONLY, DEBUGGING
+
+Disassembly of section .text:
+
+00000000 <__vectors>:
+   0:	0c 94 2a 00 	jmp	0x54	; 0x54 <__ctors_end>
+   4:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+   8:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+   c:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  10:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  14:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  18:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  1c:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  20:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  24:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  28:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  2c:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  30:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  34:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  38:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  3c:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  40:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  44:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  48:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  4c:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+  50:	0c 94 34 00 	jmp	0x68	; 0x68 <__bad_interrupt>
+
+00000054 <__ctors_end>:
+  54:	11 24       	eor	r1, r1
+  56:	1f be       	out	0x3f, r1	; 63
+  58:	cf e5       	ldi	r28, 0x5F	; 95
+  5a:	d8 e0       	ldi	r29, 0x08	; 8
+  5c:	de bf       	out	0x3e, r29	; 62
+  5e:	cd bf       	out	0x3d, r28	; 61
+  60:	0e 94 41 00 	call	0x82	; 0x82 <main>
+  64:	0c 94 4b 00 	jmp	0x96	; 0x96 <_exit>
+
+00000068 <__bad_interrupt>:
+  68:	0c 94 00 00 	jmp	0	; 0x0 <__vectors>
+
+0000006c <delay>:
+    }
+}
+
+void delay(){
+	//loading timer register with the needed value
+	TCNT0 = 0xc2; //1 1 0 0 0 0 1 0
+  6c:	82 ec       	ldi	r24, 0xC2	; 194
+  6e:	82 bf       	out	0x32, r24	; 50
+	//Setting the timer mode to normal and setting prescaler to use \8 through timer counter control register
+	TCCR0=0x02;//0000 0010
+  70:	82 e0       	ldi	r24, 0x02	; 2
+  72:	83 bf       	out	0x33, r24	; 51
+	//wait until we have an overflow flag raised in bit 0 (TOV0) in Timer Interrupt Flag Register
+	while((TIFR&0x01)==0);
+  74:	08 b6       	in	r0, 0x38	; 56
+  76:	00 fe       	sbrs	r0, 0
+  78:	fd cf       	rjmp	.-6      	; 0x74 <delay+0x8>
+	//set the TOV0 with it's initial value
+	TIFR=0x01;
+  7a:	81 e0       	ldi	r24, 0x01	; 1
+  7c:	88 bf       	out	0x38, r24	; 56
+	//set the timer with it's initial value again
+	TCNT0=0x00;
+  7e:	12 be       	out	0x32, r1	; 50
+  80:	08 95       	ret
+
+00000082 <main>:
+#include "timerDriver.h"
+
+void delay();
+int main(void)
+{
+	PORTC_Data_Direction=0xff;//0000 0001
+  82:	8f ef       	ldi	r24, 0xFF	; 255
+  84:	84 bb       	out	0x14, r24	; 20
+	//SREG=0x80;
+    /* Replace with your application code */
+    while (1) 
+    {
+		
+		PORTC_Data=0x01;//0000 0001
+  86:	81 e0       	ldi	r24, 0x01	; 1
+  88:	85 bb       	out	0x15, r24	; 21
+		delay();
+  8a:	0e 94 36 00 	call	0x6c	; 0x6c <delay>
+		PORTC_Data=0x00;
+  8e:	15 ba       	out	0x15, r1	; 21
+		delay();
+  90:	0e 94 36 00 	call	0x6c	; 0x6c <delay>
+  94:	f8 cf       	rjmp	.-16     	; 0x86 <main+0x4>
+
+00000096 <_exit>:
+  96:	f8 94       	cli
+
+00000098 <__stop_program>:
+  98:	ff cf       	rjmp	.-2      	; 0x98 <__stop_program>
